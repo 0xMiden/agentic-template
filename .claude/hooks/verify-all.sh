@@ -44,7 +44,7 @@ if [[ -d "$FRONTEND_DIR/node_modules" ]]; then
     FAILED=1
   fi
 
-  if npx vite build 2>&1; then
+  if yarn build 2>&1; then
     echo "frontend-template: build passed"
   else
     echo "frontend-template: build FAILED"
@@ -54,8 +54,10 @@ fi
 
 if [[ $FAILED -eq 0 ]]; then
   echo '{"hookSpecificOutput": {"additionalContext": "Full verification passed for all templates"}}'
+  >&2 echo "verify-all.sh: PASS"
   exit 0
 else
   echo '{"hookSpecificOutput": {"additionalContext": "Full verification FAILED. Check output above for details."}}'
+  >&2 echo "verify-all.sh: FAIL"
   exit 2
 fi
