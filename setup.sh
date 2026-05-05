@@ -46,21 +46,42 @@ check_or_install_rust() {
 }
 
 check_or_install_midenup() {
-  if have midenup; then
+  # Step 2a: ensure midenup binary exists. midenup is published on crates.io
+  # as 0.2.0, but the latest channel manifest support and recent fixes only
+  # land on origin/main; per the midenup README, install from --git until a
+  # newer release ships.
+  if ! have midenup; then
+    info "midenup not found. Installing via 'cargo install --git $MIDENUP_GIT_URL midenup'."
+    cargo install --git "$MIDENUP_GIT_URL" midenup \
+      || fail "step 2/6: cargo install --git $MIDENUP_GIT_URL midenup failed"
+    source_cargo_env
+    have midenup || fail "step 2/6: midenup not on PATH after install"
+    info "midenup installed at $(command -v midenup)"
+  else
     info "midenup found at $(command -v midenup)"
-    return 0
   fi
-  # midenup is published on crates.io as 0.2.0, but the latest channel
-  # manifest support and recent fixes only land on origin/main; per the
-  # midenup README, install from --git until a newer release ships.
-  info "midenup not found. Installing via cargo install --git $MIDENUP_GIT_URL"
-  cargo install --git "$MIDENUP_GIT_URL" \
-    || fail "step 2/6: cargo install --git $MIDENUP_GIT_URL failed"
-  source_cargo_env
-  have midenup || fail "step 2/6: midenup not on PATH after install"
-  midenup init           || fail "step 2/6: midenup init failed"
-  midenup install stable || fail "step 2/6: midenup install stable failed"
-  info "midenup installed and initialized."
+
+  # Step 2b: ensure 'midenup init' has produced the 'miden' symlink in
+  # $CARGO_HOME/bin. Safe to rerun: midenup init is idempotent.
+  if ! have miden; then
+    info "miden symlink not on PATH; running 'midenup init'."
+    midenup init || fail "step 2/6: midenup init failed"
+    source_cargo_env
+    have miden || fail "step 2/6: miden still not on PATH after midenup init (ensure ~/.cargo/bin is in PATH)"
+  fi
+
+  # Step 2c: ensure a toolchain is installed. 'midenup show active-toolchain'
+  # prints the active channel name to stdout when a toolchain is available;
+  # install stable only when no name is shown. Capture stdout so a non-zero
+  # exit (e.g. transient symlink warning) does not abort detection.
+  local active
+  active="$(midenup show active-toolchain 2>/dev/null | head -n1 || true)"
+  if [ -n "$active" ]; then
+    info "midenup toolchain already active: $active"
+  else
+    info "No midenup toolchain active; installing stable."
+    midenup install stable || fail "step 2/6: midenup install stable failed"
+  fi
 }
 
 check_node() {

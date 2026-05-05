@@ -31,7 +31,7 @@ git submodule update --init --recursive
 bash setup.sh
 ```
 
-`setup.sh` auto-installs Rust and midenup if missing. Node.js (v18+) and Yarn v1 must be installed manually if missing.
+`setup.sh` auto-installs Rust, midenup, and Yarn v1 (via npm, when Node and npm are available) if missing; Yarn v2+ is rejected. Node.js v18+ must be installed manually if missing.
 
 ## Structure
 
