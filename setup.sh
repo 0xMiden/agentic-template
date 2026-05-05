@@ -70,16 +70,18 @@ check_or_install_midenup() {
     have miden || fail "step 2/6: miden still not on PATH after midenup init (ensure ~/.cargo/bin is in PATH)"
   fi
 
-  # Step 2c: ensure a toolchain is installed. 'midenup show active-toolchain'
-  # prints the active channel name to stdout when a toolchain is available;
-  # install stable only when no name is shown. Capture stdout so a non-zero
-  # exit (e.g. transient symlink warning) does not abort detection.
-  local active
-  active="$(midenup show active-toolchain 2>/dev/null | head -n1 || true)"
-  if [ -n "$active" ]; then
-    info "midenup toolchain already active: $active"
+  # Step 2c: ensure the stable Miden toolchain is installed. 'midenup show
+  # list' enumerates installed toolchains from the local manifest and marks
+  # the one matching the latest stable channel with '(stable)' (see
+  # midenup/src/commands/show.rs:62-87 and toolchain.rs:150-211 for installed
+  # vs. configured-active semantics). Capture stdout so a non-zero exit from
+  # a transient EPERM symlink warning does not abort detection.
+  local list_output
+  list_output="$(midenup show list 2>/dev/null || true)"
+  if printf '%s\n' "$list_output" | grep -qF '(stable)'; then
+    info "midenup stable toolchain already installed."
   else
-    info "No midenup toolchain active; installing stable."
+    info "midenup stable toolchain not installed; running 'midenup install stable'."
     midenup install stable || fail "step 2/6: midenup install stable failed"
   fi
 }
