@@ -27,11 +27,11 @@ git submodule update --init --recursive
 ### Install Dependencies
 
 ```bash
-# Frontend dependencies
-cd frontend-template && yarn install && cd ..
+# Checks prerequisites, installs the Miden toolchain, runs yarn install, and pre-builds contracts
+bash setup.sh
 ```
 
-Rust dependencies are handled automatically by `cargo`.
+`setup.sh` auto-installs Rust, midenup, and Yarn v1 (via npm, when Node and npm are available) if missing; Yarn v2+ is rejected. Node.js v18+ must be installed manually if missing.
 
 ## Structure
 
