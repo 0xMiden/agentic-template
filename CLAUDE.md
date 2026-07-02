@@ -112,7 +112,7 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `rust-sdk-patterns` | writing or reviewing Miden contract code (`#[component]`, `#[note]`, `#[tx_script]`), storage, native functions, asset handling, P2ID output notes, cross-component calls. |
 | `rust-sdk-pitfalls` | debugging contract code or asking about felt arithmetic, comparison ops, 4-Word arg limits, storage naming, no-std, P2ID roots, NoteType ctors, note-to-component boundaries, note input immutability. |
 | `rust-sdk-testing-patterns` | writing MockChain integration tests: account / note creation, storage verification, multi-tx tests, output-note assertions, asset-bearing notes. |
-| `rust-sdk-source-guide` | advanced multi-contract patterns or exploring `miden-base`, `compiler`, `miden-client`, `tutorials` source repos. Documents Plan Mode and verification-driven dev for contract work. |
+| `rust-sdk-source-guide` | advanced multi-contract patterns or exploring `protocol`, `compiler`, `rust-sdk`, `tutorials` source repos. Documents Plan Mode and verification-driven dev for contract work. |
 | `local-node-validation` | MockChain tests pass and the contract needs to be validated against a real local Miden node before the frontend phase. |
 | `miden-client-cli` | installing or using the `miden client` CLI via midenup or direct `cargo install`; canonical command and config reference. Project-template only. |
 
@@ -127,7 +127,7 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `vite-wasm-setup` | configuring Vite for Miden: `midenVitePlugin()`, COOP/COEP headers, dev and production deployment headers, TypeScript compatibility. |
 | `frontend-pitfalls` | debugging a frontend bug: WASM init race, recursive WASM access, COOP/COEP misconfig, BigInt mismatch, Bech32 network mismatch, IndexedDB state loss, auto-sync side effects, StrictMode double-init. |
 | `testing-patterns` | writing Vitest + testing-library tests for Miden React components (`@miden-sdk/react` mock factory, fixtures, transaction-stage simulation). |
-| `frontend-source-guide` | advanced frontend patterns or exploring `miden-client` source for custom hooks, custom signers, raw `WasmWebClient` usage. |
+| `frontend-source-guide` | advanced frontend patterns or exploring `web-sdk` source for custom hooks, custom signers, raw `WasmWebClient` usage. |
 
 ### `0xMiden/agent-tools` (22 skills upstream, fallback)
 
@@ -195,4 +195,4 @@ Per-mode guidance for non-implementation work. These workflows do not exempt bui
 - **Architecture research.** Compose multiple skills across both submodules (for a wallet-integrated dapp, that is `miden-concepts` + `rust-sdk-patterns` + `react-sdk-patterns` + `signer-integration`). Reach for `agent-tools` when the topic is not covered, especially MASM-level topics.
 - **Application planning.** Reference the `examples/miden-bank` app inside `0xMiden/tutorials` and the broader tutorials examples as canonical projects builders can study or extend.
 - **Debugging existing Miden code.** Load the relevant `*-pitfalls` skill plus the matching `*-patterns` skill (`frontend-pitfalls` + `react-sdk-patterns`; `rust-sdk-pitfalls` + `rust-sdk-patterns`). For MASM-level debugging, fall back to the `agent-tools` MASM family.
-- **Factuality is required.** Any answer in Q&A or research mode must be correct and grounded in source. If a question exceeds what the loaded skills cover, the agent must verify against the actual source repositories using `rust-sdk-source-guide` (for contract or Rust topics) or `frontend-source-guide` (for frontend or web SDK topics) -- those skills map the relevant repos (`miden-base`, `compiler`, `miden-client`, `tutorials`). Speculation, "probably", or "should be" answers are not acceptable. Verify in source, or say "not covered, would need to check X".
+- **Factuality is required.** Any answer in Q&A or research mode must be correct and grounded in source. If a question exceeds what the loaded skills cover, the agent must verify against the actual source repositories using `rust-sdk-source-guide` (for contract or Rust topics) or `frontend-source-guide` (for frontend or web SDK topics) -- those skills map the relevant repos (`protocol`, `compiler`, `rust-sdk`, `web-sdk`, `tutorials`). Speculation, "probably", or "should be" answers are not acceptable. Verify in source, or say "not covered, would need to check X".

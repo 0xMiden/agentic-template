@@ -93,7 +93,7 @@ No build pipeline required. Open Claude Code (or Codex) at the repository root a
 - **Writing or reviewing a frontend** → `react-sdk-patterns`, `frontend-pitfalls`, `web-client-usage`, `signer-integration`, `vite-wasm-setup`
 - **MASM authoring or debugging** → the MASM family in `0xMiden/agent-tools` (`masm-formatting`, `masm-doc-comments`, `masm-padding`, …)
 - **Architecture / planning** — compose multiple skills; reference the `examples/miden-bank` app in `0xMiden/tutorials`
-- **Going deeper than the skills cover** → `rust-sdk-source-guide` or `frontend-source-guide` to verify against the actual `miden-base`, `miden-client`, `compiler`, and `tutorials` source
+- **Going deeper than the skills cover** → `rust-sdk-source-guide` or `frontend-source-guide` to verify against the actual `protocol`, `rust-sdk`, `web-sdk`, `compiler`, and `tutorials` source
 
 Hard rule, encoded in `CLAUDE.md`: any answer must be grounded in skill content or verified in source. "Probably" and "should be" are not acceptable.
 
