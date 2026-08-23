@@ -118,6 +118,17 @@ Three skill sources are available to agents launched at the parent root. Every n
 
 ### `frontend-template/.claude/skills/` (8 skills, app-developer)
 
+**Seven of these are installed rather than committed.** They ship inside the
+`@miden-sdk/*` npm packages and are written into `.claude/skills/` by the
+`prepare` script during `yarn install`, which `setup.sh` already runs. So they
+are there after a normal setup, exactly as before — but they now match the SDK
+version the template pins, instead of being a snapshot that drifts as the SDK
+moves. If the directory looks short, dependencies have not been installed yet;
+`yarn miden-skills sync` refreshes it on demand.
+
+`miden-concepts` is the exception and stays committed, because it describes the
+protocol rather than the SDK and so is not published to npm.
+
 | Skill | When to load it |
 |---|---|
 | `miden-concepts` | same triggers as the project-template version; prefer the project-template copy when both are available. |
@@ -129,9 +140,18 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `testing-patterns` | writing Vitest + testing-library tests for Miden React components (`@miden-sdk/react` mock factory, fixtures, transaction-stage simulation). |
 | `frontend-source-guide` | advanced frontend patterns or exploring `web-sdk` source for custom hooks, custom signers, raw `WasmWebClient` usage. |
 
-### `0xMiden/agent-tools` (22 skills upstream, fallback)
+### `0xMiden/agent-tools` (fallback, ecosystem-wide topics)
 
-Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 22 skills are mirrored in the submodules above (use the submodule version per the precedence rule). The other 9 are upstream-only and not present in either submodule.
+Repository: `https://github.com/0xMiden/agent-tools`. It is canonical for
+knowledge that spans the ecosystem — Miden Assembly, the Rust SDK, protocol
+concepts, and the slash commands. Some of its skills are mirrored in the
+submodules above; use the submodule version per the precedence rule.
+
+It no longer carries anything describing the `@miden-sdk/*` JavaScript API.
+Those skills moved to [`0xMiden/web-sdk`](https://github.com/0xMiden/web-sdk)
+and now arrive through `yarn install` in `frontend-template` (see above), so
+they stay matched to the installed SDK version rather than drifting from it.
+See [agent-tools#16](https://github.com/0xMiden/agent-tools/pull/16).
 
 **MASM family (6, upstream-only).** Reach for these whenever the topic is MASM authoring, formatting, or debugging.
 
@@ -142,13 +162,21 @@ Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 22 skills are mi
 - `masm-constants` -- constant placement, error code organization, memory pointer naming.
 - `masm-file-structure` -- section ordering for `.masm` files, header format.
 
-**Contributor-focused (3, upstream-only).** Useful when working inside the `miden-client` codebase itself rather than building on top of it.
+**Contributor-focused (1, upstream-only).** Useful when working inside the Rust client codebase itself rather than building on top of it.
 
-- `rust-client-patterns` -- conventions for the `miden-client` Rust crates (`rust-client`, `sqlite-store`, `idxdb-store`, `web-client`).
-- `idxdb-patterns` -- IndexedDB / Dexie persistence layer in `miden-client/idxdb-store`.
-- `wasm-bridge` -- Rust to JS WASM boundary in `miden-client/web-client`.
+- `rust-client-patterns` -- conventions for the `miden-client` Rust crates (`rust-client`, `sqlite-store`).
+
+`idxdb-patterns` and `wasm-bridge` used to sit here. They moved to
+[`0xMiden/web-sdk`](https://github.com/0xMiden/web-sdk)'s own `.claude/skills/`,
+beside the crates they describe. They document internals rather than the public
+API, so they are not published to npm — read them in a web-sdk checkout.
 
 ### Deployment
+
+This step now covers **only** the MASM, Rust-SDK and slash-command surface. The
+frontend and web-SDK skills no longer depend on it — they arrive with
+`yarn install` in `frontend-template`, so a plain clone-and-`setup.sh` gets them
+whether or not the step below has been run.
 
 `agent-tools` is not bundled with this template. The cleanest path is to install it once at the user level so Claude Code auto-discovers both skills and slash commands across all projects:
 
@@ -167,7 +195,10 @@ ln -sf ~/agent-tools/commands/*.md ~/.claude/commands/
 
 Skills and slash commands live in different upstream subdirectories (`agent-tools/skills/` vs `agent-tools/commands/`) and Claude Code discovers them from different user-level paths (`~/.claude/skills/` vs `~/.claude/commands/`), so both symlink lines are required: the skills link does not make commands available, and vice versa. The `mkdir -p` step guarantees both target directories exist on a fresh machine.
 
-`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, contributor-focused skills, the slash commands in `## Optional Slash Commands`) is conditional on that install.
+`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, `rust-client-patterns`, the slash commands in `## Optional Slash Commands`) is conditional on that install.
+
+The web-SDK and React skills are **not** conditional: they install with the
+frontend dependencies, so they are present after `setup.sh` regardless.
 
 ## Optional Slash Commands
 
