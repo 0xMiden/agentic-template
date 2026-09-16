@@ -129,20 +129,34 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `testing-patterns` | writing Vitest + testing-library tests for Miden React components (`@miden-sdk/react` mock factory, fixtures, transaction-stage simulation). |
 | `frontend-source-guide` | advanced frontend patterns or exploring `web-sdk` source for custom hooks, custom signers, raw `WasmWebClient` usage. |
 
-### `0xMiden/agent-tools` (22 skills upstream, fallback)
+### `0xMiden/agent-tools` (33 skills upstream, fallback)
 
-Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 22 skills are mirrored in the submodules above (use the submodule version per the precedence rule). The other 9 are upstream-only and not present in either submodule.
+Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 33 skills are mirrored in the submodules above (use the submodule version per the precedence rule). The other 20 are upstream-only and not present in either submodule.
 
-**MASM family (6, upstream-only).** Reach for these whenever the topic is MASM authoring, formatting, or debugging.
+**MASM family (13, upstream-only).** Reach for these whenever the topic is MASM authoring, formatting, or debugging.
 
+- `cheap-masm-equivalents` -- MASM substitutions for common Rust or high-level patterns.
 - `masm-formatting` -- orchestrator: capitalization (`UPPER_SNAKE_CASE` for Words, lower for felts), `(N)` span family, `Cycles:` section, chained `u32assert2` guards.
 - `masm-inline-comments` -- inline `# => [...]` stack-state comments, lowercase, do-not-overcomment.
 - `masm-doc-comments` -- procedure doc blocks: Description, Inputs, Outputs, Where, Panics if, Invocation.
 - `masm-padding` -- `pad(N)` rules for `call` vs `exec`, stack depth floor of 16.
 - `masm-constants` -- constant placement, error code organization, memory pointer naming.
+- `masm-error-constants` -- stable error-code constants and assertion-message conventions.
+- `masm-explicit-stack-inputs` -- explicit stack contracts for proc inputs and outputs.
 - `masm-file-structure` -- section ordering for `.masm` files, header format.
+- `masm-locals-over-globals` -- prefer locals and explicit stack flow over global memory.
+- `masm-named-literals` -- replace unexplained numeric literals with named constants.
+- `masm-proc-type-signatures` -- type-signature comments for MASM procedures.
+- `masm-rust-constant-parity` -- keep MASM constants synchronized with Rust constants.
 
-**Contributor-focused (3, upstream-only).** Useful when working inside the `miden-client` codebase itself rather than building on top of it.
+**Guardrail and hygiene skills (4, upstream-only).** Useful when reviewing generated code or avoiding recurring Miden mistakes.
+
+- `advice-provider-hygiene` -- keep agent guidance source-grounded and current.
+- `decouple-component-from-storage` -- separate component interfaces from storage implementation details.
+- `felt-construction` -- correct `Felt` construction and non-canonical value handling.
+- `u32-assert-before-u32-ops` -- assert before u32 operations so failures are explicit.
+
+**Client-internals skills (3, upstream-only).** Useful when working inside the `miden-client` codebase itself rather than building on top of it.
 
 - `rust-client-patterns` -- conventions for the `miden-client` Rust crates (`rust-client`, `sqlite-store`, `idxdb-store`, `web-client`).
 - `idxdb-patterns` -- IndexedDB / Dexie persistence layer in `miden-client/idxdb-store`.
