@@ -116,12 +116,12 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `local-node-validation` | MockChain tests pass and the contract needs to be validated against a real local Miden node before the frontend phase. |
 | `miden-client-cli` | installing or using the `miden client` CLI via midenup or direct `cargo install`; canonical command and config reference. Project-template only. |
 
-### `frontend-template/.claude/skills/` (8 skills, app-developer)
+### `frontend-template/.claude/skills/` (10 skills, app-developer)
 
-**Seven of these are installed rather than committed.** They ship inside the
+**Nine of these are installed rather than committed.** They ship inside the
 `@miden-sdk/*` npm packages and are written into `.claude/skills/` by the
 `prepare` script during `yarn install`, which `setup.sh` already runs. So they
-are there after a normal setup, exactly as before — but they now match the SDK
+are there after a normal setup, exactly as before, but they now match the SDK
 version the template pins, instead of being a snapshot that drifts as the SDK
 moves. If the directory looks short, dependencies have not been installed yet;
 `yarn miden-skills sync` refreshes it on demand.
@@ -139,42 +139,46 @@ protocol rather than the SDK and so is not published to npm.
 | `frontend-pitfalls` | debugging a frontend bug: WASM init race, recursive WASM access, COOP/COEP misconfig, BigInt mismatch, Bech32 network mismatch, IndexedDB state loss, auto-sync side effects, StrictMode double-init. |
 | `testing-patterns` | writing Vitest + testing-library tests for Miden React components (`@miden-sdk/react` mock factory, fixtures, transaction-stage simulation). |
 | `frontend-source-guide` | advanced frontend patterns or exploring `web-sdk` source for custom hooks, custom signers, raw `WasmWebClient` usage. |
+| `chain-anchored-execution` | multisig proposals and offline co-signing: anything where one party signs a transaction summary and another executes it. Read before using `captureAnchor`, or when co-signers' summary commitments never match. |
+| `wallet-adapter-integration` | connecting through the MidenFi wallet adapter: provider wiring, the `WalletReadyState` lifecycle, the error taxonomy, and when to drive `MidenClient` directly instead. |
 
-### `0xMiden/agent-tools` (fallback, ecosystem-wide topics)
+### `0xMiden/agent-tools` (33 skills upstream, fallback)
 
-Repository: `https://github.com/0xMiden/agent-tools`. It is canonical for
-knowledge that spans the ecosystem — Miden Assembly, the Rust SDK, protocol
-concepts, and the slash commands. Some of its skills are mirrored in the
-submodules above; use the submodule version per the precedence rule.
+Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 33 skills are mirrored in the submodules above (use the submodule version per the precedence rule). The other 20 are upstream-only and not present in either submodule.
 
-It no longer carries anything describing the `@miden-sdk/*` JavaScript API.
-Those skills moved to [`0xMiden/web-sdk`](https://github.com/0xMiden/web-sdk)
-and now arrive through `yarn install` in `frontend-template` (see above), so
-they stay matched to the installed SDK version rather than drifting from it.
-See [agent-tools#16](https://github.com/0xMiden/agent-tools/pull/16).
+**MASM family (13, upstream-only).** Reach for these whenever the topic is MASM authoring, formatting, or debugging.
 
-**MASM family (6, upstream-only).** Reach for these whenever the topic is MASM authoring, formatting, or debugging.
-
+- `cheap-masm-equivalents` -- MASM substitutions for common Rust or high-level patterns.
 - `masm-formatting` -- orchestrator: capitalization (`UPPER_SNAKE_CASE` for Words, lower for felts), `(N)` span family, `Cycles:` section, chained `u32assert2` guards.
 - `masm-inline-comments` -- inline `# => [...]` stack-state comments, lowercase, do-not-overcomment.
 - `masm-doc-comments` -- procedure doc blocks: Description, Inputs, Outputs, Where, Panics if, Invocation.
 - `masm-padding` -- `pad(N)` rules for `call` vs `exec`, stack depth floor of 16.
 - `masm-constants` -- constant placement, error code organization, memory pointer naming.
+- `masm-error-constants` -- stable error-code constants and assertion-message conventions.
+- `masm-explicit-stack-inputs` -- explicit stack contracts for proc inputs and outputs.
 - `masm-file-structure` -- section ordering for `.masm` files, header format.
+- `masm-locals-over-globals` -- prefer locals and explicit stack flow over global memory.
+- `masm-named-literals` -- replace unexplained numeric literals with named constants.
+- `masm-proc-type-signatures` -- type-signature comments for MASM procedures.
+- `masm-rust-constant-parity` -- keep MASM constants synchronized with Rust constants.
 
-**Contributor-focused (1, upstream-only).** Useful when working inside the Rust client codebase itself rather than building on top of it.
+**Guardrail and hygiene skills (4, upstream-only).** Useful when reviewing generated code or avoiding recurring Miden mistakes.
 
-- `rust-client-patterns` -- conventions for the `miden-client` Rust crates (`rust-client`, `sqlite-store`).
+- `advice-provider-hygiene` -- keep agent guidance source-grounded and current.
+- `decouple-component-from-storage` -- separate component interfaces from storage implementation details.
+- `felt-construction` -- correct `Felt` construction and non-canonical value handling.
+- `u32-assert-before-u32-ops` -- assert before u32 operations so failures are explicit.
 
-`idxdb-patterns` and `wasm-bridge` used to sit here. They moved to
-[`0xMiden/web-sdk`](https://github.com/0xMiden/web-sdk)'s own `.claude/skills/`,
-beside the crates they describe. They document internals rather than the public
-API, so they are not published to npm — read them in a web-sdk checkout.
+**Client-internals skills (3, upstream-only).** Useful when working inside the `miden-client` codebase itself rather than building on top of it.
+
+- `rust-client-patterns` -- conventions for the `miden-client` Rust crates (`rust-client`, `sqlite-store`, `idxdb-store`, `web-client`).
+- `idxdb-patterns` -- IndexedDB / Dexie persistence layer in `miden-client/idxdb-store`.
+- `wasm-bridge` -- Rust to JS WASM boundary in `miden-client/web-client`.
 
 ### Deployment
 
 This step now covers **only** the MASM, Rust-SDK and slash-command surface. The
-frontend and web-SDK skills no longer depend on it — they arrive with
+frontend and web-SDK skills no longer depend on it: they arrive with
 `yarn install` in `frontend-template`, so a plain clone-and-`setup.sh` gets them
 whether or not the step below has been run.
 
@@ -195,7 +199,7 @@ ln -sf ~/agent-tools/commands/*.md ~/.claude/commands/
 
 Skills and slash commands live in different upstream subdirectories (`agent-tools/skills/` vs `agent-tools/commands/`) and Claude Code discovers them from different user-level paths (`~/.claude/skills/` vs `~/.claude/commands/`), so both symlink lines are required: the skills link does not make commands available, and vice versa. The `mkdir -p` step guarantees both target directories exist on a fresh machine.
 
-`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, `rust-client-patterns`, the slash commands in `## Optional Slash Commands`) is conditional on that install.
+`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, the client-internals skills, the slash commands in `## Optional Slash Commands`) is conditional on that install.
 
 The web-SDK and React skills are **not** conditional: they install with the
 frontend dependencies, so they are present after `setup.sh` regardless.
