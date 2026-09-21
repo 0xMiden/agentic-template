@@ -116,7 +116,18 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `local-node-validation` | MockChain tests pass and the contract needs to be validated against a real local Miden node before the frontend phase. |
 | `miden-client-cli` | installing or using the `miden client` CLI via midenup or direct `cargo install`; canonical command and config reference. Project-template only. |
 
-### `frontend-template/.claude/skills/` (8 skills, app-developer)
+### `frontend-template/.claude/skills/` (10 skills, app-developer)
+
+**Nine of these are installed rather than committed.** They ship inside the
+`@miden-sdk/*` npm packages and are written into `.claude/skills/` by the
+`prepare` script during `yarn install`, which `setup.sh` already runs. So they
+are there after a normal setup, exactly as before, but they now match the SDK
+version the template pins, instead of being a snapshot that drifts as the SDK
+moves. If the directory looks short, dependencies have not been installed yet;
+`yarn miden-skills sync` refreshes it on demand.
+
+`miden-concepts` is the exception and stays committed, because it describes the
+protocol rather than the SDK and so is not published to npm.
 
 | Skill | When to load it |
 |---|---|
@@ -128,6 +139,8 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `frontend-pitfalls` | debugging a frontend bug: WASM init race, recursive WASM access, COOP/COEP misconfig, BigInt mismatch, Bech32 network mismatch, IndexedDB state loss, auto-sync side effects, StrictMode double-init. |
 | `testing-patterns` | writing Vitest + testing-library tests for Miden React components (`@miden-sdk/react` mock factory, fixtures, transaction-stage simulation). |
 | `frontend-source-guide` | advanced frontend patterns or exploring `web-sdk` source for custom hooks, custom signers, raw `WasmWebClient` usage. |
+| `chain-anchored-execution` | multisig proposals and offline co-signing: anything where one party signs a transaction summary and another executes it. Read before using `captureAnchor`, or when co-signers' summary commitments never match. |
+| `wallet-adapter-integration` | connecting through the MidenFi wallet adapter: provider wiring, the `WalletReadyState` lifecycle, the error taxonomy, and when to drive `MidenClient` directly instead. |
 
 ### `0xMiden/agent-tools` (33 skills upstream, fallback)
 
@@ -164,6 +177,11 @@ Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 33 skills are mi
 
 ### Deployment
 
+This step now covers **only** the MASM, Rust-SDK and slash-command surface. The
+frontend and web-SDK skills no longer depend on it: they arrive with
+`yarn install` in `frontend-template`, so a plain clone-and-`setup.sh` gets them
+whether or not the step below has been run.
+
 `agent-tools` is not bundled with this template. The cleanest path is to install it once at the user level so Claude Code auto-discovers both skills and slash commands across all projects:
 
 ```
@@ -181,7 +199,10 @@ ln -sf ~/agent-tools/commands/*.md ~/.claude/commands/
 
 Skills and slash commands live in different upstream subdirectories (`agent-tools/skills/` vs `agent-tools/commands/`) and Claude Code discovers them from different user-level paths (`~/.claude/skills/` vs `~/.claude/commands/`), so both symlink lines are required: the skills link does not make commands available, and vice versa. The `mkdir -p` step guarantees both target directories exist on a fresh machine.
 
-`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, contributor-focused skills, the slash commands in `## Optional Slash Commands`) is conditional on that install.
+`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, the client-internals skills, the slash commands in `## Optional Slash Commands`) is conditional on that install.
+
+The web-SDK and React skills are **not** conditional: they install with the
+frontend dependencies, so they are present after `setup.sh` regardless.
 
 ## Optional Slash Commands
 
