@@ -104,7 +104,7 @@ Three skill sources are available to agents launched at the parent root. Every n
 
 **Precedence rule.** When the same skill exists in a submodule and in `agent-tools`, prefer the submodule version: it is tailored for the app-developer template context and may carry sections specific to this template's flow. Fall back to `agent-tools` only when the topic is not covered downstream.
 
-### `project-template/.claude/skills/` (7 skills, app-developer)
+### `project-template/.claude/skills/` (9 skills, app-developer)
 
 | Skill | When to load it |
 |---|---|
@@ -115,10 +115,12 @@ Three skill sources are available to agents launched at the parent root. Every n
 | `rust-sdk-source-guide` | advanced multi-contract patterns or exploring `protocol`, `compiler`, `rust-sdk`, `tutorials` source repos. Documents Plan Mode and verification-driven dev for contract work. |
 | `local-node-validation` | MockChain tests pass and the contract needs to be validated against a real local Miden node before the frontend phase. |
 | `miden-client-cli` | installing or using the `miden client` CLI via midenup or direct `cargo install`; canonical command and config reference. Project-template only. |
+| `account-code-upgrades` | upgrading existing accounts in v0.17: authority, direct client requests, network upgrade notes, configuration ordering, fees and validation. |
+| `rust-client-patterns` | Rust client transaction requests, multisig authentication and state sync; also documents conventions for the upstream Rust client internals. |
 
-### `frontend-template/.claude/skills/` (10 skills, app-developer)
+### `frontend-template/.claude/skills/` (11 skills after install, app-developer)
 
-**Nine of these are installed rather than committed.** They ship inside the
+**Ten of these are installed rather than committed.** They ship inside the
 `@miden-sdk/*` npm packages and are written into `.claude/skills/` by the
 `prepare` script during `yarn install`, which `setup.sh` already runs. So they
 are there after a normal setup, exactly as before, but they now match the SDK
@@ -139,12 +141,13 @@ protocol rather than the SDK and so is not published to npm.
 | `frontend-pitfalls` | debugging a frontend bug: WASM init race, recursive WASM access, COOP/COEP misconfig, BigInt mismatch, Bech32 network mismatch, IndexedDB state loss, auto-sync side effects, StrictMode double-init. |
 | `testing-patterns` | writing Vitest + testing-library tests for Miden React components (`@miden-sdk/react` mock factory, fixtures, transaction-stage simulation). |
 | `frontend-source-guide` | advanced frontend patterns or exploring `web-sdk` source for custom hooks, custom signers, raw `WasmWebClient` usage. |
-| `chain-anchored-execution` | multisig proposals and offline co-signing: anything where one party signs a transaction summary and another executes it. Read before using `captureAnchor`, or when co-signers' summary commitments never match. |
+| `chain-anchored-execution` | multisig proposals, offline co-signing, and transaction summary commitments. |
 | `wallet-adapter-integration` | connecting through the MidenFi wallet adapter: provider wiring, the `WalletReadyState` lifecycle, the error taxonomy, and when to drive `MidenClient` directly instead. |
+| `observability` | instrumenting SDK client operations with observer callbacks and understanding the emitted observations and optional telemetry integrations. |
 
-### `0xMiden/agent-tools` (33 skills upstream, fallback)
+### `0xMiden/agent-tools` (25 skills upstream, fallback)
 
-Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 33 skills are mirrored in the submodules above (use the submodule version per the precedence rule). The other 20 are upstream-only and not present in either submodule.
+Repository: `https://github.com/0xMiden/agent-tools`. Eight of its 25 skills are shared with the submodules above (use the submodule version per the precedence rule). The other 17 are upstream-only and not present in either submodule. Frontend and web-client skills now come from the SDK's npm packages.
 
 **MASM family (13, upstream-only).** Reach for these whenever the topic is MASM authoring, formatting, or debugging.
 
@@ -168,12 +171,6 @@ Repository: `https://github.com/0xMiden/agent-tools`. 13 of the 33 skills are mi
 - `decouple-component-from-storage` -- separate component interfaces from storage implementation details.
 - `felt-construction` -- correct `Felt` construction and non-canonical value handling.
 - `u32-assert-before-u32-ops` -- assert before u32 operations so failures are explicit.
-
-**Client-internals skills (3, upstream-only).** Useful when working inside the `miden-client` codebase itself rather than building on top of it.
-
-- `rust-client-patterns` -- conventions for the `miden-client` Rust crates (`rust-client`, `sqlite-store`, `idxdb-store`, `web-client`).
-- `idxdb-patterns` -- IndexedDB / Dexie persistence layer in `miden-client/idxdb-store`.
-- `wasm-bridge` -- Rust to JS WASM boundary in `miden-client/web-client`.
 
 ### Deployment
 
@@ -199,7 +196,7 @@ ln -sf ~/agent-tools/commands/*.md ~/.claude/commands/
 
 Skills and slash commands live in different upstream subdirectories (`agent-tools/skills/` vs `agent-tools/commands/`) and Claude Code discovers them from different user-level paths (`~/.claude/skills/` vs `~/.claude/commands/`), so both symlink lines are required: the skills link does not make commands available, and vice versa. The `mkdir -p` step guarantees both target directories exist on a fresh machine.
 
-`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, the client-internals skills, the slash commands in `## Optional Slash Commands`) is conditional on that install.
+`agent-tools` skills and slash commands are only available if the user has run the install step or an equivalent. Guidance below that depends on `agent-tools` (the MASM family, the upstream-only guardrails, the slash commands in `## Optional Slash Commands`) is conditional on that install.
 
 The web-SDK and React skills are **not** conditional: they install with the
 frontend dependencies, so they are present after `setup.sh` regardless.
