@@ -107,9 +107,9 @@ The AI experience is the core of this template. Skills, hooks, and slash command
 
 | Source | Skills | Notes |
 |---|---|---|
-| `project-template/.claude/skills/` | 7 — `miden-concepts`, `rust-sdk-patterns`, `rust-sdk-pitfalls`, `rust-sdk-testing-patterns`, `rust-sdk-source-guide`, `local-node-validation`, `miden-client-cli` | App-developer skills, tailored for this template. |
-| `frontend-template/.claude/skills/` | 8 — `miden-concepts`, `react-sdk-patterns`, `signer-integration`, `web-client-usage`, `vite-wasm-setup`, `frontend-pitfalls`, `testing-patterns`, `frontend-source-guide` | App-developer skills for the React / web SDK side. |
-| [`0xMiden/agent-tools`](https://github.com/0xMiden/agent-tools) | 33 upstream (13 mirrored above + 20 upstream-only: MASM family ×13, guardrails ×4, client internals ×3) | Fallback when a topic is not covered downstream; canonical for MASM, contributor hygiene, and `miden-client` internals. |
+| `project-template/.claude/skills/` | 9 — `miden-concepts`, `rust-sdk-patterns`, `rust-sdk-pitfalls`, `rust-sdk-testing-patterns`, `rust-sdk-source-guide`, `local-node-validation`, `miden-client-cli`, `account-code-upgrades`, `rust-client-patterns` | App-developer skills, tailored for this template. |
+| `frontend-template/.claude/skills/` | 11 after install — committed `miden-concepts` plus 10 SDK skills: `react-sdk-patterns`, `signer-integration`, `web-client-usage`, `vite-wasm-setup`, `frontend-pitfalls`, `testing-patterns`, `frontend-source-guide`, `chain-anchored-execution`, `wallet-adapter-integration`, `observability` | SDK skills install from the pinned npm packages during `yarn install`; refresh with `yarn miden-skills sync`. |
+| [`0xMiden/agent-tools`](https://github.com/0xMiden/agent-tools) | 25 upstream (8 shared with the templates + 17 upstream-only: MASM family ×13, guardrails ×4) | Fallback for MASM and protocol-level guidance not covered by the submodules. Frontend and web-client skills come from npm. |
 
 **Precedence:** when the same skill exists in a submodule and in `agent-tools`, prefer the submodule version (it carries app-developer context). Fall back to `agent-tools` for what is not covered downstream.
 
