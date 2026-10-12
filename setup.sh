@@ -70,20 +70,13 @@ check_or_install_midenup() {
     have miden || fail "step 2/6: miden still not on PATH after midenup init (ensure ~/.cargo/bin is in PATH)"
   fi
 
-  # Step 2c: ensure the stable Miden toolchain is installed. 'midenup show
-  # list' enumerates installed toolchains from the local manifest and marks
-  # the one matching the latest stable channel with '(stable)' (see
-  # midenup/src/commands/show.rs:62-87 and toolchain.rs:150-211 for installed
-  # vs. configured-active semantics). Capture stdout so a non-zero exit from
-  # a transient EPERM symlink warning does not abort detection.
-  local list_output
-  list_output="$(midenup show list 2>/dev/null || true)"
-  if printf '%s\n' "$list_output" | grep -qF '(stable)'; then
-    info "midenup stable toolchain already installed."
-  else
-    info "midenup stable toolchain not installed; running 'midenup install stable'."
-    midenup install stable || fail "step 2/6: midenup install stable failed"
-  fi
+  # Respect the checked-in project channel rather than the mutable stable alias.
+  local channel
+  channel="$(sed -n 's/^[[:space:]]*channel[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "$SCRIPT_DIR/project-template/miden-toolchain.toml")"
+  [ -n "$channel" ] || fail "step 2/6: missing project Miden channel"
+  ( cd "$SCRIPT_DIR/project-template" && midenup install "$channel" ) \
+    || fail "step 2/6: cannot install $channel; check midenup compatibility and network access"
+
 }
 
 check_node() {
@@ -124,8 +117,11 @@ install_frontend_deps() {
   if [ ! -d "$fe_dir" ]; then
     fail "step 5/6: $fe_dir not found. Did you clone with --recurse-submodules?"
   fi
-  ( cd "$fe_dir" && yarn install ) \
+  ( cd "$fe_dir" && yarn install --frozen-lockfile ) \
     || fail "step 5/6: yarn install failed in frontend-template"
+  # The package prepare hook tolerates errors; setup must establish usable context.
+  ( cd "$fe_dir" && yarn miden-skills sync ) \
+    || fail "step 5/6: SDK context sync failed; inspect installed packages"
 }
 
 build_contracts() {
