@@ -5,3 +5,9 @@
 local-node-data/
 local-keystore/
 local-store.sqlite3
+
+# Task-local toolchains and validation outputs
+tools/
+evidence/
+npm-cache/
+__pycache__/

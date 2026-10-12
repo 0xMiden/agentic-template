@@ -1,3 +1,47 @@
+# Agent entry: Miden v0.17
+
+Read `docs/agent-first-v017.md` before proposing or changing an app. Read the workflow below, then the submodule's guidance and relevant installed skills.
+This index supplements the workflow; it does not replace app validation gates.
+
+## Release-matched context
+
+- Project: `e941949b1cb244f1557ace1c58dca0dc7a898da8`.
+- Frontend: `71fb5bb0a205224d04a7d0264fad2cecc8d4478d`.
+- Miden channel: `project-template/miden-toolchain.toml` (0.17.0).
+- Rust resolution: `project-template/Cargo.lock`; guest SDK: contract manifests.
+- Browser resolution: `frontend-template/package.json` and `yarn.lock`.
+- Rust/local-node patterns: `project-template/.claude/skills/`.
+- Browser API skills: installed SDK packages, synced by frontend `prepare`.
+  That script tolerates sync errors; verify skills exist or run
+  `yarn miden-skills sync` explicitly before relying on them.
+- Account upgrades: project `account-code-upgrades` skill; network journey
+  requires separate validation.
+
+## Executable journey
+
+Run `bash scripts/journey.sh doctor`; report missing prerequisites precisely.
+`contracts` runs MockChain tests from the required integration working directory.
+`frontend` runs browser unit tests and production build, not a browser journey.
+`artifacts` copies freshly built packages; `testnet` requires explicit
+`MIDEN_ALLOW_TESTNET=1` and uses only test tokens.
+
+No `validate_local` binary ships at these pins. Do not claim a local-node gate
+passes from MockChain or testnet evidence. Read the local-node-validation skill,
+create an app-specific binary and validate the released split-node setup.
+
+## Boundaries and completion
+
+Plan before mutation; preserve submodule pins and user keys/stores. Never reset
+an existing wallet/store to fix version errors. Use fresh disposable state.
+Do not submit network transactions, start services, install global tools, or
+publish/deploy without authorization for that stage. Keep local node/prover/
+transport versions and genesis aligned. Follow the execution environment’s service-isolation policy.
+Report each stage as passed, failed, not run, or blocked, with commands, versions
+and evidence. Hooks do not establish wallet-extension, browser, local-node,
+private-note transport or account-upgrade completion.
+
+---
+
 # Miden Agentic Template
 
 This monorepo contains two Miden development templates as git submodules:
@@ -30,8 +74,8 @@ This template supports two modes.
 
 3. Local-node validation **(GATE -- must pass before frontend)**
    - Write Rust client binaries in `project-template/integration/src/bin/` that exercise the full contract flow against a local Miden node
-   - Start local node: `miden-node bundled start --data-directory local-node-data --rpc.url http://0.0.0.0:57291`
-   - Run: `cd project-template && cargo run --bin validate_local --release`
+   - No local validation binary ships at these pins. The included `increment_count` targets testnet.
+   - Follow the pinned local-node-validation skill and released rust-sdk v0.17.2 helper; create and verify an app-specific binary.
    - Verify: transaction success/failure paths, state transitions, note lifecycle, clean node logs
    - See the `local-node-validation` skill for the full checklist and setup guide
    - Exit criteria: all state assertions pass, node logs are clean
@@ -75,18 +119,14 @@ cargo miden build --manifest-path project-template/contracts/<name>/Cargo.toml -
 
 **Run contract integration tests:**
 ```
-cd project-template && cargo test -p integration --release
+cd project-template/integration && cargo test -p integration --release --locked
 ```
 
-**Start local Miden node:**
-```
-cd project-template && miden-node bundled start --data-directory local-node-data --rpc.url http://0.0.0.0:57291
-```
+**Local-node validation:**
 
-**Run local-node validation:**
-```
-cd project-template && cargo run --bin validate_local --release
-```
+No `validate_local` target ships here. Follow
+`project-template/.claude/skills/local-node-validation/SKILL.md` and record
+app-specific localhost assertions and clean split-node component logs.
 
 **Start frontend dev server:**
 ```

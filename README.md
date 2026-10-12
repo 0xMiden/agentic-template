@@ -2,6 +2,8 @@
 
 A full-stack Miden development workspace AND an expert Miden companion in one repo. Build Miden dApps end-to-end (Rust smart contracts + React frontend), or use the same setup as a Miden wizard for architecture, debugging, MASM, and design decisions — anything you're working on in the Miden ecosystem.
 
+Start the pinned v0.17 journey with [the agent-first guide](docs/agent-first-v017.md) and `bash scripts/journey.sh doctor`.
+
 ## Two ways to use this repo
 
 **Build Miden dApps.** Scaffold for the full pipeline: write contracts in `project-template/`, validate them with MockChain tests, gate on local-node validation against a real Miden node, then build a React frontend in `frontend-template/` that talks to them. Hooks verify your work on every edit.
@@ -14,7 +16,7 @@ Both modes share the same skills, slash commands, and verification hooks. Pick t
 
 ### Prerequisites
 
-- [Rust](https://rustup.rs/) (stable toolchain)
+- [Rust/rustup](https://rustup.rs/) (the project pins its contract nightly)
 - [midenup](https://github.com/0xMiden/midenup) toolchain (provides `cargo-miden`)
 - [Node.js](https://nodejs.org/) (v18+)
 - [Yarn](https://yarnpkg.com/) (v1)
@@ -35,7 +37,7 @@ git submodule update --init --recursive
 ### Install Dependencies
 
 ```bash
-# Checks prerequisites, installs the Miden toolchain, runs yarn install, and pre-builds contracts
+# Checks prerequisites, installs the Miden toolchain, runs locked yarn install, and pre-builds contracts
 bash setup.sh
 ```
 
@@ -70,13 +72,11 @@ Quick reference:
 cargo miden build --manifest-path project-template/contracts/<name>/Cargo.toml --release
 
 # Run all MockChain integration tests
-cd project-template && cargo test -p integration --release
+cd project-template/integration && cargo test -p integration --release --locked
 
-# Start a local Miden node
-cd project-template && miden-node bundled start --data-directory local-node-data --rpc.url http://0.0.0.0:57291
-
-# Run local-node validation
-cd project-template && cargo run --bin validate_local --release
+# Local-node validation is an app-specific gate, not an included binary.
+# Follow project-template/.claude/skills/local-node-validation/SKILL.md.
+# The shipped increment_count binary targets testnet; see the journey guide.
 
 # Start the frontend
 cd frontend-template && yarn dev
