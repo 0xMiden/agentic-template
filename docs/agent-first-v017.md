@@ -21,7 +21,7 @@ the release context before applying these commands.
 | --- | --- |
 | Root `AGENTS.md` and `CLAUDE.md` | Agent entry, pinned context, gates and evidence |
 | `project-template/README.md`, `CLAUDE.md`, `.claude/skills/` | Rust contracts, client, MockChain and local-node patterns |
-| `frontend-template/AGENTS.md`, `CLAUDE.md` | Browser app flow and installed SDK guidance |
+| `frontend-template/AGENTS.md` | Browser app flow and installed SDK guidance |
 | Installed `@miden-sdk/*/AGENTS.md` and synced skills | APIs matching the installed browser packages |
 | [Agent tools](https://github.com/0xMiden/agent-tools) | Shared protocol/MASM/review guidance; follow its install instructions |
 | [Migration guide](https://docs.miden.xyz/next/builder/migration/) | Migration details; confirm the page displays v0.17, since `/next` can advance |
@@ -30,6 +30,7 @@ the release context before applying these commands.
 Frontend install already syncs ten SDK skills via `@miden-sdk/create@0.17.0`.
 Do not duplicate those skills manually. Its `prepare` tolerates errors; check
 `.claude/skills/` and run `yarn miden-skills sync` if synchronization failed.
+Setup runs that sync explicitly so its failure cannot be hidden by `prepare`.
 Claude-specific slash commands/hooks are not guaranteed to execute in other
 agents: run the journey commands explicitly and read their output.
 
@@ -68,7 +69,53 @@ Explain the counter account, increment note and two transactions from source.
 Run doctor, then the authorized build/test stages. Report exact evidence and
 blocked gates before changing behavior.”
 
-## 3. Testnet counter → browser handoff
+## 3. Validate on a real local node and extend the app
+
+The included app-specific localhost validator exercises this counter on a fresh,
+fee-free chain using real node services, separate from MockChain:
+
+```bash
+# Requires Docker, the pinned Rust nightly and packages built by the contracts stage.
+MIDEN_ALLOW_LOCAL=1 bash scripts/journey.sh local
+# Failure injection: both commits must succeed, then expected=2 must fail with exit 1.
+python3 scripts/local_node.py --expected-count 2
+```
+
+Node, validator, ntx-builder, prover and genesis utility images are version
+0.17.0 and digest-pinned. This is the node version resolved by released
+rust-sdk v0.17.2's Cargo.lock; the host validator uses Rust client 0.17.2.
+The services run in one disposable Docker container. Only loopback RPC58291 and
+health58292 are exposed; override with `--rpc-port` / `--health-port` when needed.
+No existing store is reused or reset. Each run generates a new chain and client
+under `local-node-runs/<id>/`, and stops only its uniquely named Compose project.
+Containers and state remain available for review; remove them only under your
+own cleanup policy. The storage-key fixtures are public, insecure test material.
+
+The Rust validator rejects non-loopback URLs, existing state and fee-charging
+chains. It syncs, creates fresh sender/counter accounts, publishes the increment
+note, waits for publication and consumption commitment, then asserts the final
+counter value. A failed assertion or connection returns nonzero. The runner
+writes `report.json`, `validator.log` and `node.log`; the JSON distinguishes
+`kind: real-local-node`, readiness, validator exit code, node errors and shutdown.
+A passing run does not establish browser or wallet behavior.
+
+For a different app, define state invariants and expected failures, implement
+contracts, add MockChain assertions, then adapt this real-node flow. The old
+`validate_local` target is still absent from the project submodule; use the root
+`local` stage instead. The old `miden-node bundled start` is not a v0.17 command.
+Read the [released node helper](https://github.com/0xMiden/rust-sdk/blob/v0.17.2/scripts/start-test-node.sh)
+and the pinned local-node skill when extending the topology. Fee funding,
+account admission and private-note transport require separate validation;
+this fee-free public counter does not exercise those features.
+
+Before adding a UI, copy fresh packages and mirror the proven Rust transaction
+flow. Serialize direct WASM access via `runExclusive`; avoid nesting SDK hooks
+that already acquire that lock. Validate real signers separately if your app
+adds wallet integration. Review authentication and account upgrades from the
+pinned skills; MockChain coverage alone does not establish network upgrade
+consumption.
+
+## 4. Testnet counter → browser handoff
 
 Use a fresh clone/worktree and a fresh browser profile for this demo. Preserve
 existing keys and stores; do not reset them as an error recovery shortcut.
@@ -100,30 +147,6 @@ uses its local WebClient and testnet remote proving; this counter needs no
 wallet extension. Custom RPCs require explicitly matching faucet/prover
 configuration. Restart Vite after changing environment variables.
 
-## 4. Extend the app and earn the remaining gates
-
-Define state invariants and expected failures, implement contracts, add
-MockChain assertions, then validate your app against a real local node before
-claiming the full build workflow is complete. Neither `validate_local.rs` nor
-its Cargo target ships at these pins. The old `miden-node bundled start` command
-is not the pinned skill's v0.17 recipe.
-
-Use `project-template/.claude/skills/local-node-validation/SKILL.md` and the
-[released rust-sdk v0.17.2 helper](https://github.com/0xMiden/rust-sdk/blob/v0.17.2/scripts/start-test-node.sh).
-Create an app-specific localhost client/binary with separate state, matching
-genesis and split validator/sequencer/prover/ntx-builder services. Verify
-publication, consumption, commitment, final assertions and component logs.
-Private-note delivery additionally needs the matching transport service and
-explicit delivery checks. Follow your environment’s service-isolation policy when starting a node.
-The journey script does not launch services automatically.
-
-Before adding a UI, copy fresh packages and mirror the proven Rust transaction
-flow. Serialize direct WASM access via `runExclusive`; avoid nesting SDK hooks
-that already acquire that lock. Validate real signers separately if your app
-adds wallet integration. Review authentication and account upgrades from the
-pinned skills; MockChain coverage alone does not establish network upgrade
-consumption.
-
 ## Recover from a failed stage
 
 | Symptom | Check and next action |
@@ -145,10 +168,12 @@ Merged [agent-tools PR18](https://github.com/0xMiden/agent-tools/pull/18),
 [frontend PR31](https://github.com/0xMiden/frontend-template/pull/31) report
 counter validation. The commands above were checked against the pinned baseline:
 1 MockChain counter test, 53 frontend tests, typecheck, production build and
-6 stage-runner tests passed. Run the stage-runner tests with
+12 stage/safety tests passed. The real local-node counter passed with exit 0;
+an injected wrong-count assertion and connection/state guards returned nonzero.
+Run the stage-runner tests with
 `python3 -m unittest discover -s tests -v`.
-Fresh testnet funding, browser interaction, wallet-extension use, complete
-local-node setup and network account-upgrade consumption are separate gates.
+Fresh testnet funding, browser interaction, wallet-extension use, fee-charging
+local admission/funding and network account upgrades remain separate gates.
 
 [Playground PR669](https://github.com/walnuthq/miden-playground/pull/669) records
 faster faucet PoW and a successful request returning a note ID; its wallet

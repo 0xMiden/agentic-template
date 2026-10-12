@@ -69,17 +69,17 @@ Quick reference:
 
 ```bash
 # Build a single contract
-cargo miden build --manifest-path project-template/contracts/<name>/Cargo.toml --release
+(cd project-template/contracts/<name> && miden build --release)
 
 # Run all MockChain integration tests
-cd project-template/integration && cargo test -p integration --release --locked
+(cd project-template/integration && cargo test -p integration --release --locked)
 
-# Local-node validation is an app-specific gate, not an included binary.
-# Follow project-template/.claude/skills/local-node-validation/SKILL.md.
-# The shipped increment_count binary targets testnet; see the journey guide.
+# From the repository root, validate this counter on a disposable Docker chain
+MIDEN_ALLOW_LOCAL=1 bash scripts/journey.sh local
+# Adapt the included example and pinned local-node skill for another app.
 
 # Start the frontend
-cd frontend-template && yarn dev
+(cd frontend-template && yarn dev)
 ```
 
 See `CLAUDE.md` at the root for full exit criteria and the per-step skill map.

@@ -11,3 +11,5 @@ tools/
 evidence/
 npm-cache/
 __pycache__/
+local-node-runs/
+examples/local-counter/target/

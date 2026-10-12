@@ -65,6 +65,20 @@ class JourneyTests(unittest.TestCase):
         self.assertNotEqual(self.run_stage('artifacts').returncode, 0)
         self.assertFalse((package_dir / 'counter-account.masp').exists())
 
+    def test_local_validator_requires_explicit_stage_opt_in(self):
+        result = self.run_stage('local')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('MIDEN_ALLOW_LOCAL=1', result.stderr)
+        self.assertFalse(self.log.exists())
+
+    def test_setup_reports_failed_sdk_context_sync(self):
+        self.tool('node', 'echo v20.20.2')
+        self.tool('yarn', 'if [[ "$1" == --version ]]; then echo 1.22.22; elif [[ "$1" == miden-skills ]]; then exit 5; fi')
+        result = subprocess.run(['/bin/bash', str(self.root / 'setup.sh')], env=self.env,
+                                capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('SDK context sync failed', result.stderr)
+
     def test_setup_installs_project_channel_and_locks_frontend(self):
         self.tool('node', 'echo v20.20.2')
         self.tool('yarn', 'if [[ "$1" == --version ]]; then echo 1.22.22; fi')

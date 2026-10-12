@@ -1,0 +1,27 @@
+name: miden-agentic-local-counter
+services:
+  node:
+    build: .
+    image: miden-agentic-local-counter:0.17.0
+    restart: "no"
+    environment:
+      RUST_LOG: info
+    labels:
+      dev.resource.task: agentic-v017-local-counter
+      dev.resource.kind: service
+    ports:
+      # Host Rust validator is the sole consumer of these two loopback ports.
+      - "127.0.0.1:${MIDEN_LOCAL_RPC_PORT:-58291}:57291"
+      - "127.0.0.1:${MIDEN_LOCAL_HEALTH_PORT:-58292}:8080"
+    volumes:
+      - ${MIDEN_LOCAL_NODE_STATE:?Fresh disposable node state required}:/data
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

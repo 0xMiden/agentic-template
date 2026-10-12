@@ -38,9 +38,13 @@ case "${1:-doctor}" in
     done
     printf '%s\n' 'Packages copied. Review submodule changes; configure your deployed counter ID.'
     ;;
+  local)
+    [ "${MIDEN_ALLOW_LOCAL:-}" = 1 ] || fail 'Explicitly set MIDEN_ALLOW_LOCAL=1; starts disposable Docker node and local client state'
+    python3 scripts/local_node.py
+    ;;
   testnet)
     [ "${MIDEN_ALLOW_TESTNET:-}" = 1 ] || fail 'Explicitly set MIDEN_ALLOW_TESTNET=1; this creates accounts, keys, store and submits testnet transactions'
     (cd project-template/integration && cargo run --bin increment_count --release --locked)
     ;;
-  *) fail 'Usage: bash scripts/journey.sh doctor|contracts|frontend|artifacts|testnet' ;;
+  *) fail 'Usage: bash scripts/journey.sh doctor|contracts|frontend|artifacts|local|testnet' ;;
 esac

@@ -11,6 +11,11 @@ This index supplements the workflow; it does not replace app validation gates.
 - Rust resolution: `project-template/Cargo.lock`; guest SDK: contract manifests.
 - Browser resolution: `frontend-template/package.json` and `yarn.lock`.
 - Rust/local-node patterns: `project-template/.claude/skills/`.
+- Browser API context (read these installed guides before using SDK APIs):
+  - `frontend-template/node_modules/@miden-sdk/miden-sdk/AGENTS.md`
+  - `frontend-template/node_modules/@miden-sdk/react/AGENTS.md`
+  - `frontend-template/node_modules/@miden-sdk/vite-plugin/AGENTS.md`
+  - `frontend-template/node_modules/@miden-sdk/miden-wallet-adapter-base/AGENTS.md`
 - Browser API skills: installed SDK packages, synced by frontend `prepare`.
   That script tolerates sync errors; verify skills exist or run
   `yarn miden-skills sync` explicitly before relying on them.
@@ -22,12 +27,15 @@ This index supplements the workflow; it does not replace app validation gates.
 Run `bash scripts/journey.sh doctor`; report missing prerequisites precisely.
 `contracts` runs MockChain tests from the required integration working directory.
 `frontend` runs browser unit tests and production build, not a browser journey.
+`local` runs the included counter on an isolated fee-free Docker chain, recording
+real commitments and final-state assertions; opt in with `MIDEN_ALLOW_LOCAL=1`.
 `artifacts` copies freshly built packages; `testnet` requires explicit
 `MIDEN_ALLOW_TESTNET=1` and uses only test tokens.
 
-No `validate_local` binary ships at these pins. Do not claim a local-node gate
-passes from MockChain or testnet evidence. Read the local-node-validation skill,
-create an app-specific binary and validate the released split-node setup.
+The project submodule has no `validate_local` binary. Use the root local stage
+and `examples/local-counter/` for the counter acceptance flow. For another app,
+read the local-node-validation skill and adapt the assertions. Never infer
+local-node completion from MockChain or testnet evidence.
 
 ## Boundaries and completion
 
@@ -74,8 +82,8 @@ This template supports two modes.
 
 3. Local-node validation **(GATE -- must pass before frontend)**
    - Write Rust client binaries in `project-template/integration/src/bin/` that exercise the full contract flow against a local Miden node
-   - No local validation binary ships at these pins. The included `increment_count` targets testnet.
-   - Follow the pinned local-node-validation skill and released rust-sdk v0.17.2 helper; create and verify an app-specific binary.
+   - The project submodule’s `increment_count` targets testnet. The root `local` stage validates the counter on an isolated Docker chain.
+   - Follow the pinned local-node-validation skill when adapting this example to your app.
    - Verify: transaction success/failure paths, state transitions, note lifecycle, clean node logs
    - See the `local-node-validation` skill for the full checklist and setup guide
    - Exit criteria: all state assertions pass, node logs are clean
@@ -124,9 +132,9 @@ cd project-template/integration && cargo test -p integration --release --locked
 
 **Local-node validation:**
 
-No `validate_local` target ships here. Follow
-`project-template/.claude/skills/local-node-validation/SKILL.md` and record
-app-specific localhost assertions and clean split-node component logs.
+Run `MIDEN_ALLOW_LOCAL=1 bash scripts/journey.sh local` for the root counter
+validator. Follow the pinned local-node-validation skill for other app flows.
+Record assertions and logs separately from MockChain and browser checks.
 
 **Start frontend dev server:**
 ```

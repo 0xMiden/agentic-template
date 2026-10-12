@@ -119,6 +119,9 @@ install_frontend_deps() {
   fi
   ( cd "$fe_dir" && yarn install --frozen-lockfile ) \
     || fail "step 5/6: yarn install failed in frontend-template"
+  # The package prepare hook tolerates errors; setup must establish usable context.
+  ( cd "$fe_dir" && yarn miden-skills sync ) \
+    || fail "step 5/6: SDK context sync failed; inspect installed packages"
 }
 
 build_contracts() {
