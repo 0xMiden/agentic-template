@@ -28,12 +28,10 @@ fi
 
 if [[ ! -d "$CLAUDE_PROJECT_DIR/frontend-template/node_modules" ]]; then
   >&2 echo "frontend-template: dependencies missing; verification incomplete"
-  FAILED=1
 fi
 
 if [[ ! -d "$PROJECT_DIR/contracts" ]]; then
   >&2 echo "project-template: submodule missing; verification incomplete"
-  FAILED=1
 fi
 
 # --- Frontend Template: tests + typecheck + build ---

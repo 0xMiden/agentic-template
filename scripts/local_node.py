@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import socket
 import subprocess
 import sys
@@ -63,6 +64,15 @@ def main():
               'kind': 'real-local-node', 'passed': False}
     code = 1
     started = False
+
+    def terminate(signum, _frame):
+        nonlocal code
+        code = 128 + signum
+        report['passed'] = False
+        report['error'] = 'Interrupted by SIGTERM'
+        raise SystemExit(code)
+
+    signal.signal(signal.SIGTERM, terminate)
     try:
         # Pinned Rust nightly and Cargo.lock, separate from the guest compiler pin.
         target = ROOT / 'tools/local-counter-target'
@@ -100,12 +110,13 @@ def main():
         report['error'] = str(error)
         print(str(error), file=sys.stderr)
     finally:
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
         if started:
             with (run_dir / 'node.log').open('w') as log:
-                subprocess.run(compose + ['logs', '--no-color'], env=env, stdout=log, stderr=subprocess.STDOUT)
+                logs = subprocess.run(compose + ['logs', '--no-color'], env=env, stdout=log, stderr=subprocess.STDOUT)
             node_log = (run_dir / 'node.log').read_text()
-            report['node_error_count'] = len(re.findall(r'\bERROR\b', node_log))
-            if report['node_error_count'] and code == 0:
+            report['node_error_count'] = None if logs.returncode else len(re.findall(r'\bERROR\b', node_log))
+            if (logs.returncode or report['node_error_count']) and code == 0:
                 code = 1
                 report['passed'] = False
             # Stop only this owned project. Containers/state remain for review.
